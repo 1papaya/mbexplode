@@ -36,7 +36,9 @@ export default mbtilesExploder = function (mbtilesPath, outDir, opts) {
 
     // figure out outDir from options
     if (opts.namedSubfolder)
-      outDir = `${outDir}/${metadata.name}`
+      if (!("name" in metadata))
+        throw new ReferenceError(`name not specified in metadata`);
+      else outDir = `${outDir}/${metadata.name}`;
 
     if (opts.verbose) console.log(`outDir: ${outDir}`);
 
