@@ -1,3 +1,4 @@
+const Buffer = require("buffer").Buffer;
 const sqlite3 = require("sqlite3");
 const zlib = require("zlib");
 const fs = require("fs");
@@ -51,10 +52,21 @@ export default mbtilesExploder = function (mbtilesPath, outDir, opts) {
       }.${metadata.format}`;
 
       fs.mkdir(outFolder, { recursive: true }, () => {
-        fs.writeFile(outFile, row.tile_data, (err) => {
-          if (err) throw err;
-          if (opts.verbose) console.log(`wrote ${outFile}`);
-        });
+        if (opts.unzipPbf && metadata.format === "pbf") {
+          zlib.gunzip(new Buffer(row.tile_data), (err, buffer) => {
+            if (err) throw new Error(err);
+
+            fs.writeFile(outFile, buffer, (err) => {
+              if (err) throw new Error(err);
+              if (opts.verbose) console.log(`wrote ${outFile}`);
+            });
+          });
+        } else {
+          fs.writeFile(outFile, row.tile_data, (err) => {
+            if (err) throw new Error(err);
+            if (opts.verbose) console.log(`wrote ${outFile}`);
+          });
+        }
       });
     });
   });
