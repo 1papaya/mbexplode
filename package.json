@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "buffer": "^6.0.3",
-    "sqlite-async": "^1.1.1",
     "sqlite3": "^5.0.1",
     "zlib": "^1.0.5"
   }
