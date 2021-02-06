@@ -9,8 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "better-sqlite3": "^7.1.2",
     "buffer": "^6.0.3",
     "sqlite3": "^5.0.1",
+    "yargs": "^16.2.0",
     "zlib": "^1.0.5"
   }
 }

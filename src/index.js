@@ -3,7 +3,7 @@ const Buffer = require("buffer").Buffer;
 const zlib = require("zlib");
 const fs = require("fs");
 
-export default mbexplode = function (mbtilesPath, outDir, opts) {
+module.exports = function (mbtilesPath, outDir, opts) {
   // apply default opts
   opts = Object.assign(
     {
@@ -23,15 +23,16 @@ export default mbexplode = function (mbtilesPath, outDir, opts) {
       .prepare("SELECT name, value FROM metadata")
       .all()
       .map((m) => {
-        return { [t.name]: t.value };
+        return { [m.name]: m.value };
       })
   );
 
   const minMaxZoom = db
-    .prepare("SELECT MIN(zoom_level), MAX(zoom_level) FROM tiles")
-    .all();
+    .prepare("SELECT MIN(zoom_level) as min, MAX(zoom_level) as max FROM tiles")
+    .get();
 
-  const numTiles = db.prepare(`SELECT COUNT(*) from tiles`).get();
+  const numTiles = db.prepare(`SELECT COUNT(*) as count from tiles`).get()
+    .count;
 
   // check mbtiles validity
   if (!("format" in metadata))
@@ -44,9 +45,10 @@ export default mbexplode = function (mbtilesPath, outDir, opts) {
   if (opts.namedSubfolder) outDir = `${outDir}/${metadata.name}`;
 
   console.log(
-    `${metadata.name}: ${metadata.format} | ${numTiles} tiles | z${minMaxZoom[0]}-${minMaxZoom[1]}`
+    `${metadata.name}: ${metadata.format} | ${numTiles} tiles | z${minMaxZoom.min}-${minMaxZoom.max}`
   );
 
+  outDir = outDir.replace("//", "/");
   console.log(`${metadata.name}: outDir: ${outDir}`);
 
   const tiles = db.prepare("SELECT * FROM tiles");
@@ -69,10 +71,10 @@ export default mbexplode = function (mbtilesPath, outDir, opts) {
 
     const buffer =
       metadata.format === "pbf" && opts.unzipPbf
-        ? zlib.gunzip(new Buffer(row.tile_data))
-        : row.tile_data;
+        ? zlib.gunzip(new Buffer(tile.tile_data))
+        : tile.tile_data;
 
-    fs.writeFileSync(outFile, buffer);
+    fs.writeFileSync(outPath, buffer);
     if (opts.verbose) console.log(`wrote ${path.zoom}/${path.x}/${path.y}`);
   }
 };
