@@ -16,12 +16,16 @@ export default mbexplode = function (mbtilesPath, outDir, opts) {
 
   const db = new Database(mbtilesPath, { fileMustExist: true });
 
-  const metadata = db
-    .prepare("SELECT name, value FROM metadata")
-    .all()
-    .map((m) => {
-      return { [t.name]: t.value };
-    });
+  // get metadata as {name:value}
+  const metadata = Object.assign(
+    {},
+    ...db
+      .prepare("SELECT name, value FROM metadata")
+      .all()
+      .map((m) => {
+        return { [t.name]: t.value };
+      })
+  );
 
   const minMaxZoom = db
     .prepare("SELECT MIN(zoom_level), MAX(zoom_level) FROM tiles")
