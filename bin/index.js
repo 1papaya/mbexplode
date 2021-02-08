@@ -14,7 +14,7 @@ const argv = require("yargs")
     "named-subfolder": {
       default: false,
       describe:
-        "output tiles in subfolder of mbtilesPath according to name in mbtiles metadata",
+        "output tiles in subfolder of outDir according to name in mbtiles metadata",
       type: "boolean",
     },
     "unzip-pbf": {
