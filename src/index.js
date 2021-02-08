@@ -1,5 +1,6 @@
 const Database = require("better-sqlite3");
 const Buffer = require("buffer").Buffer;
+const path = require("path");
 const zlib = require("zlib");
 const fs = require("fs");
 
@@ -27,7 +28,7 @@ module.exports = function (mbtilesPath, outDir, opts) {
       })
   );
 
-  const minMaxZoom = db
+  const zoom = db
     .prepare("SELECT MIN(zoom_level) as min, MAX(zoom_level) as max FROM tiles")
     .get();
 
@@ -42,19 +43,18 @@ module.exports = function (mbtilesPath, outDir, opts) {
     throw new ReferenceError(`name not specified in metadata`);
 
   // add subfolder from metadata name if specified
-  if (opts.namedSubfolder) outDir = `${outDir}/${metadata.name}`;
+  if (opts.namedSubfolder) outDir = path.join(outDir, metadata.name);
 
   console.log(
-    `${metadata.name}: ${metadata.format} | ${numTiles} tiles | z${minMaxZoom.min}-${minMaxZoom.max}`
+    `${metadata.name}: ${metadata.format} | ${numTiles} tiles | z${zoom.min}-${zoom.max}`
   );
 
-  outDir = outDir.replace("//", "/");
   console.log(`${metadata.name}: outDir: ${outDir}`);
 
   const tiles = db.prepare("SELECT * FROM tiles");
 
   for (const tile of tiles.iterate()) {
-    const path = {
+    const tPath = {
       dir: outDir,
       zoom: tile.zoom_level,
       x: tile.tile_column,
@@ -62,9 +62,9 @@ module.exports = function (mbtilesPath, outDir, opts) {
       ext: metadata.format,
     };
 
-    const outFolder = `${path.dir}/${path.zoom}/${path.x}`;
-    const outFile = `${path.y}.${path.ext}`;
-    const outPath = `${outFolder}/${outFile}`;
+    const outFolder = path.join(tPath.dir, tPath.zoom, tPath.x);
+    const outFile = `${tPath.y}.${tPath.ext}`;
+    const outPath = path.join(outFolder, outFile);
 
     // make sure output folder exists
     if (!fs.existsSync(outFolder)) fs.mkdirSync(outFolder, { recursive: true });
@@ -75,6 +75,9 @@ module.exports = function (mbtilesPath, outDir, opts) {
         : tile.tile_data;
 
     fs.writeFileSync(outPath, buffer);
-    if (opts.verbose) console.log(`wrote ${path.zoom}/${path.x}/${path.y}`);
+    if (opts.verbose)
+      console.log(
+        `${metadata.name}: wrote ${tPath.zoom}/${tPath.x}/${tPath.y}.${tPath.ext}`
+      );
   }
 };
