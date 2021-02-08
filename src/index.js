@@ -1,5 +1,4 @@
 const Database = require("better-sqlite3");
-const Buffer = require("buffer").Buffer;
 const path = require("path");
 const zlib = require("zlib");
 const fs = require("fs");
@@ -56,9 +55,9 @@ module.exports = function (mbtilesPath, outDir, opts) {
   for (const tile of tiles.iterate()) {
     const tPath = {
       dir: outDir,
-      zoom: tile.zoom_level,
-      x: tile.tile_column,
-      y: (1 << tile.zoom_level) - tile.tile_row - 1,
+      zoom: String(tile.zoom_level),
+      x: String(tile.tile_column),
+      y: String((1 << tile.zoom_level) - tile.tile_row - 1),
       ext: metadata.format,
     };
 
@@ -71,10 +70,11 @@ module.exports = function (mbtilesPath, outDir, opts) {
 
     const buffer =
       metadata.format === "pbf" && opts.unzipPbf
-        ? zlib.gunzip(new Buffer(tile.tile_data))
+        ? zlib.gunzipSync(tile.tile_data)
         : tile.tile_data;
 
     fs.writeFileSync(outPath, buffer);
+
     if (opts.verbose)
       console.log(
         `${metadata.name}: wrote ${tPath.zoom}/${tPath.x}/${tPath.y}.${tPath.ext}`
