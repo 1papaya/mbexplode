@@ -1,5 +1,5 @@
 {
-  "name": "mbtiles-explode",
+  "name": "mbexplode",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
@@ -13,9 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "better-sqlite3": "^7.1.2",
-    "sqlite3": "^5.0.1",
-    "yargs": "^16.2.0",
-    "zlib": "^1.0.5"
+    "yargs": "^16.2.0"
   },
   "devDependencies": {
     "dir-compare": "^3.0.0",
